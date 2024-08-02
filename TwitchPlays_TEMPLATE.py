@@ -1,15 +1,18 @@
-import concurrent.futures
-import random
-import keyboard
-import pydirectinput
-import pyautogui
+import concurrent.futures, random, keyboard
+import pydirectinput, pyautogui
 import TwitchPlays_Connection
 from TwitchPlays_KeyCodes import *
+import tkinter as tk
+from tkinter import messagebox
+import psutil
+import ctypes
+import software
+
 
 ##################### GAME VARIABLES #####################
 
 # Replace this with your Twitch username. Must be all lowercase.
-TWITCH_CHANNEL = 'dougdougw' 
+TWITCH_CHANNEL = 'YOUR_CHANNEL_NAME_HERE' 
 
 # If streaming on Youtube, set this to False
 STREAMING_ON_TWITCH = True
@@ -59,12 +62,39 @@ else:
     t = TwitchPlays_Connection.YouTube()
     t.youtube_connect(YOUTUBE_CHANNEL_ID, YOUTUBE_STREAM_URL)
 
+def get_active_exe_name():
+    user32 = ctypes.windll.user32
+    kernel32 = ctypes.windll.kernel32
+
+    # Get the handle of the foreground window
+    hwnd = user32.GetForegroundWindow()
+
+    # Get the process ID of the foreground window
+    pid = ctypes.c_ulong()
+    user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+
+    # Get the process name from the process ID
+    process = psutil.Process(pid.value)
+    exe_name = process.name()
+
+    return exe_name
+
+def check_name(name, names_list):
+    for n in names_list:
+        if n.lower() == name.lower():
+            return True
+    return False
+
 def handle_message(message):
     try:
         msg = message['message'].lower()
         username = message['username'].lower()
 
         print("Got this message from " + username + ": " + msg)
+        
+        if check_name(username, software.BannedUsers):
+            return
+        
 
         # Now that you have a chat message, this is where you add your game logic.
         # Use the "HoldKey(KEYCODE)" function to permanently press and hold down a key.
@@ -125,9 +155,7 @@ def handle_message(message):
     except Exception as e:
         print("Encountered exception: " + str(e))
 
-
 while True:
-
     active_tasks = [t for t in active_tasks if not t.done()]
 
     #Check for new messages
@@ -157,9 +185,21 @@ while True:
     if not messages_to_handle:
         continue
     else:
-        for message in messages_to_handle:
-            if len(active_tasks) <= MAX_WORKERS:
-                active_tasks.append(thread_pool.submit(handle_message, message))
-            else:
-                print(f'WARNING: active tasks ({len(active_tasks)}) exceeds number of workers ({MAX_WORKERS}). ({len(message_queue)} messages in the queue)')
+        from software import ApprovedExeProcesses
+        active_exe_name = get_active_exe_name()
+        print("Active Application is:", str(active_exe_name))
+        if software.UseMode == 1:
+            if check_name(str(active_exe_name), software.ApprovedExeProcesses):
+                for message in messages_to_handle:
+                    if len(active_tasks) <= MAX_WORKERS:
+                        active_tasks.append(thread_pool.submit(handle_message, message))
+                else:
+                    print(f'WARNING: active tasks ({len(active_tasks)}) exceeds number of workers ({MAX_WORKERS}). ({len(message_queue)} messages in the queue)')
+        else:
+            for message in messages_to_handle:
+                if len(active_tasks) <= MAX_WORKERS:
+                        active_tasks.append(thread_pool.submit(handle_message, message))
+                else:
+                    print(f'WARNING: active tasks ({len(active_tasks)}) exceeds number of workers ({MAX_WORKERS}). ({len(message_queue)} messages in the queue)')
+ 
  
