@@ -1,4 +1,4 @@
-# DougDoug Note: 
+#DougDoug Note: 
 # This is the code that connects to Twitch / Youtube and checks for new messages.
 # You should not need to modify anything in this file, just use as is.
 
@@ -176,7 +176,7 @@ class YouTube:
 
     def reconnect(self, delay):
         if self.fetch_job and self.fetch_job.running():
-            if not fetch_job.cancel():
+            if not self.fetch_job.cancel():
                 print("Waiting for fetch job to finish...")
                 self.fetch_job.result()
         print(f"Retrying in {delay}...")
