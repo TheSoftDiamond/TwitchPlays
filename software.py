@@ -10,7 +10,7 @@ BannedUsers = []
 
 UseMode = 1 # 0 for false, 1 for true
 
-# Enter as many names as you wish to here, as these are essentially different profiles for your Twitch Plays, so you can jump between different games or software.
-# This will require you to also program in the logic in which games or software reacts to the chat commands in the main.py file yourself. The names must match the names in this list.
+# Enter a name to use here, as this acts as a current profile system for your Twitch Plays, so you can jump between different games or software.
+# This will require you to also program in the logic in which games or software reacts to the chat commands in the main.py file yourself. The names must match.
 # I recommend adding the .lower() function to the names in the main.py, so that the names are not case sensitive.
-SoftwareFormats = []
+SoftwareFormats = ""
